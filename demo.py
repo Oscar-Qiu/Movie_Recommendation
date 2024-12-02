@@ -1,24 +1,83 @@
+import base64
 import streamlit as st
 import requests
 import os
 
+# Convert to base64 encoding
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+def set_jpg_as_page_bg(jpg_file):
+    bin_str = get_base64_of_bin_file(jpg_file)
+    page_bg_img = f'''
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{bin_str}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Set background image
+set_jpg_as_page_bg('resources/movie_background3.jpg')
+
+# Set font colors and styles
 st.markdown("""
 <style>
+/* Set text to white, but exclude input and textarea elements */
+.block-container h1, .block-container h2, .block-container h3,
+.block-container h4, .block-container h5, .block-container h6,
+.block-container p, .block-container span, .block-container div,
+.block-container label {
+    color: white !important;
+}
+
+/* Set links to light blue */
+.block-container a {
+    color: #ADD8E6 !important;
+}
+
+/* Style the buttons */
+.block-container .stButton button {
+    color: white !important;
+    background-color: #1E90FF !important; 
+    border: none !important;
+    border-radius: 5px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+
+/* Hover effect for buttons */
+.block-container .stButton button:hover {
+    background-color: #63B3ED !important; 
+}
+
+/* Transparency and shadow for single-line text */
 .single-line {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    background-color: rgba(0, 0, 0, 0.5); 
+    padding: 2px 4px;
+    border-radius: 4px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); 
 }
 </style>
 """, unsafe_allow_html=True)
+
 def get_movie_info(name):
-    # load api key from os
+    # Load API key
     api_key = os.getenv("TMDB_API_KEY")
-    # verify it's load it or not
     if not api_key:
         st.error("The API key has not been set")
         return None
-    # fetch data
+    # Get movie data
     search_url = f'https://api.themoviedb.org/3/search/movie'
     params = {
         'api_key': api_key,
@@ -28,11 +87,11 @@ def get_movie_info(name):
     if response.status_code == 200:
         data = response.json()
         if data['results']:
-            # Get the first searching result
+            # Get first result
             movie = data['results'][0]
             movie_id = movie['id']
 
-            # Get detail info
+            # Get detailed info
             details_url = f'https://api.themoviedb.org/3/movie/{movie_id}'
             details_params = {
                 'api_key': api_key,
@@ -46,7 +105,7 @@ def get_movie_info(name):
                 else:
                     poster_url = None
 
-                # Fetch video
+                # Get video info
                 videos_url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos'
                 videos_params = {
                     'api_key': api_key,
@@ -76,13 +135,14 @@ def get_movie_info(name):
                 st.error("Unable to fetch the detail of the movie.")
                 return None
         else:
-            st.error("Do not found movie match.")
+            st.error("No movie matches found.")
             return None
     else:
         st.error("Request failed.")
         return None
 
 def get_popular_movies():
+    # Load API key
     api_key = os.getenv("TMDB_API_KEY")
     if not api_key:
         st.error("The API key has not been set")
@@ -108,7 +168,7 @@ def get_popular_movies():
                 poster_url = None
 
             movie_info = {
-                'id': movie.get('id'),  # 添加这一行
+                'id': movie.get('id'),
                 'title': movie.get('title', 'N/A'),
                 'release_date': movie.get('release_date', 'N/A'),
                 'synopsis': movie.get('overview', 'No info temporarily'),
@@ -121,9 +181,10 @@ def get_popular_movies():
         return None
 
 def get_movie_trailer(movie_id):
+    # Load API key
     api_key = os.getenv("TMDB_API_KEY")
     if not api_key:
-        st.error("The API has not been set")
+        st.error("The API key has not been set")
         return None
 
     videos_url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos'
@@ -142,15 +203,15 @@ def get_movie_trailer(movie_id):
                 return trailer_url
     return None
 
-# Set title
+# Set the title
 st.title("Movie Recommendation System")
 
-# Set sub-header
+# Set the subheader
 st.subheader("Explore Trending Movies")
 popular_movies = get_popular_movies()
 
 if popular_movies:
-    # Set columns for layout
+    # Set columns for layout purposes
     cols = st.columns(5)
     for idx, movie in enumerate(popular_movies[:10]):
         with cols[idx % 5]:
@@ -158,18 +219,19 @@ if popular_movies:
                 st.image(movie['poster_url'])
             else:
                 st.write("No poster for this movie")
+            # Add CSS effect
             st.markdown(f"<p class='single-line'>{movie['title']}</p>", unsafe_allow_html=True)
 
-            # Add Button to play trailer
+            # Add play button
             if st.button('Play Trailer', key=f"trailer_{movie['id']}"):
                 trailer_url = get_movie_trailer(movie['id'])
                 if trailer_url:
                     with st.expander("Play"):
                         st.video(trailer_url)
                 else:
-                    st.write("No Trailer for this movie")
+                    st.write("No trailer for this movie")
 
-# Movie Searching
+# Movie searching
 movie_name = st.text_input("Begin Searching")
 if movie_name:
     movie_info = get_movie_info(movie_name)
@@ -185,13 +247,12 @@ if movie_name:
             st.write(f"**Release date:** {movie_info['release_date']}")
             st.write(movie_info['synopsis'])
 
-        # Add button to play trailer
         if movie_info['trailer_url']:
             if st.button('Play Trailer', key='search_movie_trailer'):
                 with st.expander("Play"):
                     st.video(movie_info['trailer_url'])
         else:
-            st.write("No Trailer for this movie")
+            st.write("No trailer for this movie")
     else:
         st.error("No movie found")
 else:
