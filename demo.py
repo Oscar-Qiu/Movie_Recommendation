@@ -1,13 +1,19 @@
+# frontend.py
+
 import base64
 import streamlit as st
 import requests
 import os
+import pandas as pd
+from CBFRS import MultilingualMovieRecommender
 
-# Convert to base64 encoding
+
+# Helper Functions
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
+
 
 def set_jpg_as_page_bg(jpg_file):
     bin_str = get_base64_of_bin_file(jpg_file)
@@ -22,6 +28,7 @@ def set_jpg_as_page_bg(jpg_file):
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
+
 
 # Set background image
 set_jpg_as_page_bg('resources/movie_background3.jpg')
@@ -71,12 +78,44 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-def get_movie_info(name):
-    # Load API key
+
+# Load the recommender with caching to improve performance
+@st.cache_resource
+def load_recommender():
+    TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+    recommender = MultilingualMovieRecommender(
+        movies_path='Data/enriched_movies.csv',
+        tmdb_api_key=TMDB_API_KEY
+    )
+    return recommender
+recommender = load_recommender()
+def get_movie_trailer(tmdb_id):
+    """
+    Fetch the trailer URL for a given TMDB movie ID.
+    """
     api_key = os.getenv("TMDB_API_KEY")
-    if not api_key:
-        st.error("The API key has not been set")
-        return None
+    videos_url = f'https://api.themoviedb.org/3/movie/{tmdb_id}/videos'
+    videos_params = {
+        'api_key': api_key,
+        'language': 'en-US'
+    }
+    videos_response = requests.get(videos_url, params=videos_params)
+    if videos_response.status_code == 200:
+        videos_data = videos_response.json()
+        videos = videos_data.get('results', [])
+        for video in videos:
+            if video['type'] == 'Trailer' and video['site'] == 'YouTube':
+                youtube_key = video['key']
+                trailer_url = f'https://www.youtube.com/watch?v={youtube_key}'
+                return trailer_url
+    return None
+
+
+def get_movie_info(name):
+    """
+    Fetch movie details using TMDB API.
+    """
+    api_key = os.getenv("TMDB_API_KEY")
     # Get movie data
     search_url = f'https://api.themoviedb.org/3/search/movie'
     params = {
@@ -105,49 +144,34 @@ def get_movie_info(name):
                 else:
                     poster_url = None
 
-                # Get video info
-                videos_url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos'
-                videos_params = {
-                    'api_key': api_key,
-                }
-                videos_response = requests.get(videos_url, params=videos_params)
-                if videos_response.status_code == 200:
-                    videos_data = videos_response.json()
-                    videos = videos_data.get('results', [])
-                    trailer_url = None
-                    for video in videos:
-                        if video['type'] == 'Trailer' and video['site'] == 'YouTube':
-                            youtube_key = video['key']
-                            trailer_url = f'https://www.youtube.com/watch?v={youtube_key}'
-                            break
-                else:
-                    trailer_url = None
+                # Get trailer URL
+                trailer_url = get_movie_trailer(movie_id)
 
                 movie_info = {
+                    'tmdb_id': movie_id,
                     'title': details.get('title', 'N/A'),
                     'release_date': details.get('release_date', 'N/A'),
-                    'synopsis': details.get('overview', 'No info temporarily'),
+                    'synopsis': details.get('overview', 'information unavailable'),
                     'poster_url': poster_url,
                     'trailer_url': trailer_url
                 }
                 return movie_info
             else:
-                st.error("Unable to fetch the detail of the movie.")
+                st.error("Cannot get movie detail")
                 return None
         else:
-            st.error("No movie matches found.")
+            st.error("Do not found matching movie")
             return None
     else:
-        st.error("Request failed.")
+        st.error("request failed")
         return None
+
 
 def get_popular_movies():
-    # Load API key
+    """
+    Fetch popular movies using TMDB API.
+    """
     api_key = os.getenv("TMDB_API_KEY")
-    if not api_key:
-        st.error("The API key has not been set")
-        return None
-
     popular_url = 'https://api.themoviedb.org/3/movie/popular'
     params = {
         'api_key': api_key,
@@ -167,72 +191,66 @@ def get_popular_movies():
             else:
                 poster_url = None
 
+            trailer_url = get_movie_trailer(movie.get('id'))
+
             movie_info = {
                 'id': movie.get('id'),
                 'title': movie.get('title', 'N/A'),
                 'release_date': movie.get('release_date', 'N/A'),
-                'synopsis': movie.get('overview', 'No info temporarily'),
-                'poster_url': poster_url
+                'synopsis': movie.get('overview', 'information unavailable'),
+                'poster_url': poster_url,
+                'trailer_url': trailer_url
             }
             popular_movies.append(movie_info)
         return popular_movies
     else:
-        st.error("Failed to fetch popular movies.")
+        st.error("Cannot fetch popular movie list")
         return None
 
-def get_movie_trailer(movie_id):
-    # Load API key
-    api_key = os.getenv("TMDB_API_KEY")
-    if not api_key:
-        st.error("The API key has not been set")
-        return None
+def get_poster_url(tmdb_id):
+    details_url = f'https://api.themoviedb.org/3/movie/{tmdb_id}'
+    params = {'api_key': os.getenv("TMDB_API_KEY")}
+    details_response = requests.get(details_url, params=params)
+    if details_response.status_code == 200:
+        details = details_response.json()
+        poster_path = details.get('poster_path')
+        if poster_path:
+            poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+        else:
+            poster_url = None
+    else:
+        poster_url = None
+    return poster_url
+# set title
+st.title("🎬 Movie Recommendation System")
 
-    videos_url = f'https://api.themoviedb.org/3/movie/{movie_id}/videos'
-    videos_params = {
-        'api_key': api_key,
-        'language': 'en-US'
-    }
-    videos_response = requests.get(videos_url, params=videos_params)
-    if videos_response.status_code == 200:
-        videos_data = videos_response.json()
-        videos = videos_data.get('results', [])
-        for video in videos:
-            if video['type'] == 'Trailer' and video['site'] == 'YouTube':
-                youtube_key = video['key']
-                trailer_url = f'https://www.youtube.com/watch?v={youtube_key}'
-                return trailer_url
-    return None
-
-# Set the title
-st.title("Movie Recommendation System")
-
-# Set the subheader
-st.subheader("Explore Trending Movies")
+# set sub header
+st.subheader("✨ Explore Trending movies")
 popular_movies = get_popular_movies()
 
 if popular_movies:
-    # Set columns for layout purposes
+    # set columns for layout purpose
     cols = st.columns(5)
     for idx, movie in enumerate(popular_movies[:10]):
         with cols[idx % 5]:
             if movie['poster_url']:
                 st.image(movie['poster_url'])
             else:
-                st.write("No poster for this movie")
-            # Add CSS effect
+                st.write("poster unavailable")
+            # add css effect
             st.markdown(f"<p class='single-line'>{movie['title']}</p>", unsafe_allow_html=True)
 
-            # Add play button
-            if st.button('Play Trailer', key=f"trailer_{movie['id']}"):
-                trailer_url = get_movie_trailer(movie['id'])
-                if trailer_url:
-                    with st.expander("Play"):
-                        st.video(trailer_url)
-                else:
-                    st.write("No trailer for this movie")
+            # add play button
+            if movie.get('trailer_url'):
+                if st.button('▶️ play trailer', key=f"trailer_{movie['id']}"):
+                    with st.expander("▶️ trailer"):
+                        st.video(movie['trailer_url'])
+            else:
+                st.write("trailer unavailable")
 
-# Movie searching
-movie_name = st.text_input("Begin Searching")
+# movie searching
+movie_name = st.text_input("🔍 Begin Searching")
+
 if movie_name:
     movie_info = get_movie_info(movie_name)
     if movie_info:
@@ -241,19 +259,51 @@ if movie_name:
             if movie_info["poster_url"]:
                 st.image(movie_info["poster_url"])
             else:
-                st.write("No poster for this movie")
+                st.write("poster unavailable")
         with col2:
             st.markdown(f"### {movie_info['title']}")
-            st.write(f"**Release date:** {movie_info['release_date']}")
+            st.write(f"**release date:** {movie_info['release_date']}")
             st.write(movie_info['synopsis'])
 
         if movie_info['trailer_url']:
-            if st.button('Play Trailer', key='search_movie_trailer'):
-                with st.expander("Play"):
+            if st.button('▶️ play trailer', key='search_movie_trailer'):
+                with st.expander("▶️ trailer"):
                     st.video(movie_info['trailer_url'])
         else:
-            st.write("No trailer for this movie")
+            st.write("No trailer")
     else:
-        st.error("No movie found")
+        st.error("No movie detail。")
+
+    # display movie on sidebar
+    recommendations = recommender.get_movie_recommendations(
+        search_title=movie_name,
+        n_recommendations=5,
+        min_rating=7.0,
+        min_votes=1000
+    )
+
+    if recommendations is not None and not recommendations.empty:
+        st.sidebar.header("🔍 Similar movies you might be interested in")
+        for _, rec in recommendations.iterrows():
+            tmdb_id = rec['tmdb_id']
+            rec_title = rec['title']
+            # set poster url
+            poster_url = get_poster_url(tmdb_id)
+            # display poster
+            if poster_url:
+                st.sidebar.image(poster_url, width=100)
+            else:
+                st.sidebar.write("No poster available")
+
+            # Get trailer url
+            trailer_url = get_movie_trailer(tmdb_id)
+            if trailer_url:
+                st.sidebar.markdown(f"[▶️ play trailer]({trailer_url})")
+            else:
+                st.sidebar.write("no trailer available")
+
+            st.sidebar.markdown("---")
+    else:
+        st.sidebar.write("No similar movie found。")
 else:
-    st.write("Enter the name of the movie you want to search")
+    st.write("Enter the name of the movie that you want to search.")

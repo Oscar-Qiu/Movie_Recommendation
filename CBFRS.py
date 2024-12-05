@@ -225,86 +225,66 @@ class MultilingualMovieRecommender:
 
     def find_movie_by_search(self, search_title: str) -> Tuple[Optional[int], Optional[str]]:
         """
-        Search for a movie using TMDB API and find matching record in dataset
-        """
+               Search for a movie using TMDB API and find matching record in dataset
+               Modified to return the top match without terminal interaction
+               """
         print(f"\nSearching for '{search_title}'...")
-        
+
         search_results = self.tmdb_searcher.search_movie_multi_lang(search_title)
-        
+
         if not search_results:
             print("No movies found on TMDB")
-            return None, None
-        
-        print("\nFound these movies:")
-        for i, movie in enumerate(search_results[:5], 1):
-            year = movie.get('release_date', '')[:4] if movie.get('release_date') else 'N/A'
-            original_title = movie.get('original_title', '')
-            title = movie.get('title', '')
-            
-            if original_title.lower() != title.lower():
-                display_title = f"{title} ({original_title})"
-            else:
-                display_title = title
-                
-            print(f"{i}. {display_title} ({year}) - TMDB ID: {movie['id']}")
-        
-        while True:
-            try:
-                choice = int(input("\nSelect a movie (1-5) or 0 to cancel: "))
-                if choice == 0:
-                    return None, None
-                if 1 <= choice <= len(search_results[:5]):
-                    selected_movie = search_results[choice-1]
-                    break
-                print("Invalid choice. Please try again.")
-            except ValueError:
-                print("Please enter a number.")
-        
+            return None, None, None
+
+        # Automatically select the first result as the best match
+        selected_movie = search_results[0]
+
         detected_lang = self.tmdb_searcher.detect_language(search_title)
         movie_details = self.tmdb_searcher.get_movie_details(
             selected_movie['id'],
             self.tmdb_searcher.language_map[detected_lang]
         )
-        
+
         if not movie_details:
             print("Could not get movie details")
-            return None, None
-        
+            return None, None, None
+
         tmdb_id = selected_movie['id']
         dataset_match = self.df[self.df['tmdb_id'] == tmdb_id]
-        
+
         if len(dataset_match) > 0:
             idx = dataset_match.index[0]
             title = dataset_match.iloc[0]['title']
             print(f"\nFound in dataset: {title}")
-            return idx, title
-        
+            return idx, title, tmdb_id
+
         print("\nMovie not found in local dataset")
-        return None, None
+        return None, None, tmdb_id  # return tmdb_id
 
     def get_movie_recommendations(self, search_title: str, n_recommendations: int = 5,
-                                min_rating: float = None, min_votes: int = None) -> Optional[pd.DataFrame]:
+                                  min_rating: float = None, min_votes: int = None) -> Optional[pd.DataFrame]:
         """
         Get movie recommendations based on search
         """
-        movie_idx, actual_title = self.find_movie_by_search(search_title)
-        
+        movie_idx, actual_title, tmdb_id = self.find_movie_by_search(search_title)
+
         if movie_idx is None:
             print("Cannot generate recommendations: movie not found in dataset")
             return None
-        
+
         similarity_scores = self.calculate_weighted_similarity(movie_idx)
-        
+
         mask = np.ones(len(self.df), dtype=bool)
         if min_rating is not None:
             mask &= self.df['vote_average'] >= min_rating
         if min_votes is not None:
             mask &= self.df['vote_count'] >= min_votes
-        
+
         filtered_scores = similarity_scores * mask
-        similar_indices = filtered_scores.argsort()[::-1][1:n_recommendations+1]
-        
+        similar_indices = filtered_scores.argsort()[::-1][1:n_recommendations + 1]
+
         recommendations = pd.DataFrame({
+            'tmdb_id': self.df.iloc[similar_indices]['tmdb_id'],
             'title': self.df.iloc[similar_indices]['title'],
             'year': self.df.iloc[similar_indices]['year'],
             'genres': self.df.iloc[similar_indices]['genres'],
@@ -315,7 +295,7 @@ class MultilingualMovieRecommender:
             'runtime': self.df.iloc[similar_indices]['runtime'],
             'similarity_score': filtered_scores[similar_indices]
         })
-        
+
         return recommendations.sort_values('similarity_score', ascending=False)
 
 def main():
