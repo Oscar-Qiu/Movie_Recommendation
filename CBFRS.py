@@ -223,53 +223,68 @@ class MultilingualMovieRecommender:
         
         return final_similarity
 
-    def find_movie_by_search(self, search_title: str) -> Tuple[Optional[int], Optional[str]]:
+    def find_movie_by_search(self, search_title: str) -> List[Tuple[Optional[int], Optional[str], Optional[int]]]:
         """
-               Search for a movie using TMDB API and find matching record in dataset
-               Modified to return the top match without terminal interaction
-               """
+        Search for a movie using TMDB API and find all matching records in the dataset.
+
+        Returns a list of tuples containing:
+        - idx: The index of the movie in the local dataset (Optional[int])
+        - title: The title of the movie in the local dataset (Optional[str])
+        - tmdb_id: The TMDB ID of the movie (Optional[int])
+        """
         print(f"\nSearching for '{search_title}'...")
 
         search_results = self.tmdb_searcher.search_movie_multi_lang(search_title)
 
         if not search_results:
             print("No movies found on TMDB")
-            return None, None, None
+            return []
 
-        # Automatically select the first result as the best match
-        selected_movie = search_results[0]
+        matched_movies = []
 
-        detected_lang = self.tmdb_searcher.detect_language(search_title)
-        movie_details = self.tmdb_searcher.get_movie_details(
-            selected_movie['id'],
-            self.tmdb_searcher.language_map[detected_lang]
-        )
+        for movie in search_results:
+            detected_lang = self.tmdb_searcher.detect_language(search_title)
+            movie_details = self.tmdb_searcher.get_movie_details(
+                movie['id'],
+                self.tmdb_searcher.language_map.get(detected_lang, 'en-US')
+            )
 
-        if not movie_details:
-            print("Could not get movie details")
-            return None, None, None
+            if not movie_details:
+                print(f"Could not get details for TMDB ID: {movie['id']}")
+                matched_movies.append((None, None, movie['id']))
+                continue
 
-        tmdb_id = selected_movie['id']
-        dataset_match = self.df[self.df['tmdb_id'] == tmdb_id]
+            tmdb_id = movie['id']
+            dataset_match = self.df[self.df['tmdb_id'] == tmdb_id]
 
-        if len(dataset_match) > 0:
-            idx = dataset_match.index[0]
-            title = dataset_match.iloc[0]['title']
-            print(f"\nFound in dataset: {title}")
-            return idx, title, tmdb_id
+            if not dataset_match.empty:
+                idx = dataset_match.index[0]
+                title = dataset_match.iloc[0]['title']
+                print(f"\nFound in dataset: {title}")
+                matched_movies.append((idx, title, tmdb_id))
+            else:
+                print(f"\nMovie not found in local dataset: TMDB ID {tmdb_id}")
+                matched_movies.append((None, None, tmdb_id))
 
-        print("\nMovie not found in local dataset")
-        return None, None, tmdb_id  # return tmdb_id
+        return matched_movies
 
     def get_movie_recommendations(self, search_title: str, n_recommendations: int = 5,
                                   min_rating: float = None, min_votes: int = None) -> Optional[pd.DataFrame]:
         """
-        Get movie recommendations based on search
+        Get movie recommendations based on search.
         """
-        movie_idx, actual_title, tmdb_id = self.find_movie_by_search(search_title)
+        matched_movies = self.find_movie_by_search(search_title)
+
+        if not matched_movies:
+            print("Cannot generate recommendations: no movies found in search")
+            return None
+
+
+        best_match = matched_movies[0]
+        movie_idx, actual_title, tmdb_id = best_match
 
         if movie_idx is None:
-            print("Cannot generate recommendations: movie not found in dataset")
+            print("Cannot generate recommendations: best match not found in dataset")
             return None
 
         similarity_scores = self.calculate_weighted_similarity(movie_idx)
