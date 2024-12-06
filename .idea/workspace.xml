@@ -5,10 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9105afe0-dda4-4045-add2-7e5af99b8469" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/resources/movie_background.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/movie_background2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/movie_background3.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CBFRS.py" beforeDir="false" afterPath="$PROJECT_DIR$/CBFRS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/demo.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,11 +35,12 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.CBFRS.executor": "Run",
     "Python.Streamlit.executor": "Run",
     "Python.demo.executor": "Run",
     "Python.movie_recommendation.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "yiheng",
     "last_opened_file_path": "C:/Users/Oscar/PycharmProjects/Movie_Recommendation/demo.py",
     "settings.editor.selected.configurable": "advanced.settings"
   }
@@ -51,7 +50,29 @@
       <recent name="C:\Users\Oscar\PycharmProjects\Movie_Recommendation\resources" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.Streamlit">
+    <configuration name="CBFRS" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Movie_Recommendation" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/CBFRS.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Streamlit" type="PythonConfigurationType" factoryName="Python">
       <module name="Movie_Recommendation" />
       <option name="ENV_FILES" value="" />
@@ -76,6 +97,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.CBFRS" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
