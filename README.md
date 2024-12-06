@@ -28,56 +28,7 @@ The frontend serves as the user interface, providing intuitive navigation and ef
 The Hybrid Movie Recommendation System Framework integrates content-based filtering with collaborative filtering to provide comprehensive movie recommendations. 
 
 ### System Architecture
-┌───────────────────────────────────────── User Interface ─────────────────────────────────────────┐ <br>
-│                                                                                                  │ <br>
-└──────────────────────────────────────────────┬───────────────────────────────────────────────────┘ <br>
-                                               │ <br>
-                                               ▼ <br>
-┌──────────────────────────────────── Query Processing Layer ──────────────────────────────────────┐ <br>
-│                                                                                                  │ <br>
-│   ┌─────────────────┐              ┌─────────────────┐              ┌─────────────────┐          │ <br>
-│   │    Language     │              │     Title       │              │   Parameter     │          │ <br>
-│   │    Detection    │──────────────│    Matching     │──────────────│    Handling     │          │ <br>
-│   └─────────────────┘              └─────────────────┘              └─────────────────┘          │ <br>
-│                                                                                                  │ <br>
-└──────────────────────────────────────────────┬───────────────────────────────────────────────────┘ <br>
-                                               │ <br>
-                     ┌─────────────────────────┴────────────────────────┐ <br>
-                     │                                                  │ <br>
-                     ▼                                                  ▼ <br>
-┌────────────── Content-Based Module ─────────────┐     ┌────────── CF Module ────────────────┐ <br>
-│                                                 │     │                                     │ <br>
-│   ┌─────────────────┐                           │     │   ┌─────────────────┐               │ <br>
-│   │   TMDB API      │                           │     │   │   User Rating   │               │ <br>
-│   │     Data        │                           │     │   │      Data       │               │ <br>
-│   └────────┬────────┘                           │     │   └────────┬────────┘               │ <br>
-│            │                                    │     │            │                        │ <br>
-│   ┌────────▼────────┐                           │     │   ┌────────▼────────┐               │ <br>
-│   │    Feature      │                           │     │   │   User-Item     │               │ <br>
-│   │   Processing    │                           │     │   │     Matrix      │               │ <br>
-│   └────────┬────────┘                           │     │   └────────┬────────┘               │ <br>
-│            │                                    │     │            │                        │ <br>
-│   ┌────────▼────────┐                           │     │   ┌────────▼────────┐               │ <br>
-│   │   Similarity    │                           │     │   │    KNN Model    │               │ <br>
-│   │  Calculation    │                           │     │   │                 │               │ <br>
-│   └────────┬────────┘                           │     │   └────────┬────────┘               │ <br>
-│            │                                    │     │            │                        │ <br>
-└────────────┼────────────────────────────────────┘     └────────────┼────────────────────────┘ <br>
-             │                                                       │ <br>
-             └─────────────────────────┬─────────────────────────────┘ <br>
-                                       │ <br>
-                                       ▼ <br>
-┌─────────────────────────────── Hybrid Integration ──────────────────────────────────┐ <br>
-│                                                                                     │ <br>
-│   ┌─────────────────┐                              ┌─────────────────┐              │ <br>
-│   │     Score       │─────────────────────────────►│     Weight      │              │ <br>
-│   │  Normalization  │                              │   Combination   │              │ <br>
-│   └─────────────────┘                              └───────┬─────────┘              │ <br>
-│                                                            │                        │ <br>
-└───────────────────────────────────────────────────────┬────┴────────────────────────┘ <br>
-                                                        │ <br>
-                                                        ▼ <br>
-                                             Final Recommendations <br>
+![image](https://github.com/user-attachments/assets/6e0c8177-dd6e-406a-874c-d0f19011724b) 
 The system consists of three main components that work together to generate personalized recommendations:
 - **Content-Based Module**:
 This module analyzes movie attributes using the TMDB API and enriched movie data. It processes multiple features including genres (20% weight), keywords (15%), plot overview (15%), director (10%), actors (10%), and production details (10%). The module vectorizes text features using TF-IDF and normalizes numerical features using MinMaxScaler. It then calculates weighted cosine similarity between movies across these dimensions.
