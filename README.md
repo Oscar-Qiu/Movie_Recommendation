@@ -74,3 +74,5 @@ This layer combines recommendations from both modules using an adjustable weight
 4. **Integration with Recommendation System**: The sentiment-adjusted rating was used alongside original ratings to refine movie recommendations.
 
 --- 
+##3 How to Run
+Navigate to the project folder and find the demo.py document. Run the following command: streamlit run demo.py. (Notice:You need a valid TMDB api key to run our code. We hide our API key intentionally in our local env environment)
