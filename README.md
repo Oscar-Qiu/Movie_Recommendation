@@ -28,7 +28,7 @@ The frontend serves as the user interface, providing intuitive navigation and ef
 The Hybrid Movie Recommendation System Framework integrates content-based filtering with collaborative filtering to provide comprehensive movie recommendations. 
 
 ### System Architecture
-![image](https://github.com/user-attachments/assets/6e0c8177-dd6e-406a-874c-d0f19011724b) 
+![image](https://github.com/user-attachments/assets/6e0c8177-dd6e-406a-874c-d0f19011724b) \
 The system consists of three main components that work together to generate personalized recommendations:
 - **Content-Based Module**:
 This module analyzes movie attributes using the TMDB API and enriched movie data. It processes multiple features including genres (20% weight), keywords (15%), plot overview (15%), director (10%), actors (10%), and production details (10%). The module vectorizes text features using TF-IDF and normalizes numerical features using MinMaxScaler. It then calculates weighted cosine similarity between movies across these dimensions.
