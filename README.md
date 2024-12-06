@@ -9,6 +9,14 @@ This project aims to create an intelligent movie recommendation system that comb
 - **Sentiment Analysis Module**: Analyzes review sentiments to fine-tune recommendations and highlight highly-rated movies.
 - **Integration**: Seamless integration of traditional recommendation techniques with advanced natural language processing.
 
+### Dataset
+MovieTweetings(https://github.com/sidooms/MovieTweetings):
+MovieTweetings is a dataset consisting of ratings on movies that were contained in well-structured tweets on Twitter. This dataset is the result of research conducted by [Simon Dooms] (http://scholar.google.be/citations?user=owaD8qkAAAAJ) (Ghent University, Belgium) and has been presented on the CrowdRec 2013 workshop which is co-located with the ACM RecSys 2013 conference.
+Because this dataset lack detailing features of movies, we use TMDb api to enrich the movies features.
+
+### Pre-requisite
+Python 3.6, Sklearn-11.5, Pandas-2.2.3, numpy, jieba, re, logging, requests, langdetect, typing, scipy.
+
 ---
 
 ## Frontend
@@ -66,11 +74,3 @@ This layer combines recommendations from both modules using an adjustable weight
 4. **Integration with Recommendation System**: The sentiment-adjusted rating was used alongside original ratings to refine movie recommendations.
 
 --- 
-
-## Future Enhancements
-- **Real-time Analysis**: Implement real-time sentiment analysis for live user feedback.
-- **Scalability**: Optimize similarity calculations for large datasets.
-- **Multi-lingual Support**: Extend sentiment analysis to support multiple languages.
-
-
----
