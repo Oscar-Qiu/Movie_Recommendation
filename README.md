@@ -72,11 +72,5 @@ This layer combines recommendations from both modules using an adjustable weight
 - **Scalability**: Optimize similarity calculations for large datasets.
 - **Multi-lingual Support**: Extend sentiment analysis to support multiple languages.
 
----
-
-## Contributors
-- **Borui Chen** - 
-- **Lingsong Qin** - Sentiment Analysis Module
-- **Yiheng Qiu** - 
 
 ---
