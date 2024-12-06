@@ -12,16 +12,17 @@ This project aims to create an intelligent movie recommendation system that comb
 ---
 
 ## Frontend
-The frontend serves as the user interface, providing intuitive navigation and efficient access to recommendations.
+The frontend serves as the user interface, offering intuitive navigation and efficient access to personalized recommendations. Users can discover trending movies and watch their trailers directly within the application. Additionally, the interface allows users to search for specific movies, view detailed information about them, and receive tailored movie recommendations based on their searching history. This ensures a seamless and engaging user experience that caters to individual preferences and interests.
 
 ### Technology Stack
 - **Framework**: 
-
+Frontend:We utilized Streamlit, an open-source front-end framework designed specifically for data scientists and developers, to seamlessly convert Python scripts into interactive web applications. Streamlit simplifies the process of building intuitive user interfaces by offering a declarative, Python-native syntax.
 
 ### Features
 - **Search**: 
-
-
+- **Trending Movies Explore**
+- **Trailer Preview**
+- **Movie Recommendation**
 ---
 
 ## Hybrid Movie Recommendation Module
