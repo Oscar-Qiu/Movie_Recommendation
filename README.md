@@ -37,17 +37,17 @@ This component utilizes user-item interaction data to identify similar movies ba
 This layer combines recommendations from both modules using an adjustable weighting scheme. By default, it assigns 30% weight to content-based scores and 70% to collaborative filtering scores. The integration process involves normalizing scores from both systems to ensure fair combination, then ranking recommendations based on the weighted sum.
 ### Workflow
 1. **Initial Data Loading and Enrichment**:
-   Loads base movie data and user ratings
-   Enriches movie data using TMDB API
-   Processes multilingual content using specialized tokenization
+- Loads base movie data and user ratings
+- Enriches movie data using TMDB API
+- Processes multilingual content using specialized tokenization
 2. **Feature Processing**: 
-   Vectorizes text features while handling multiple languages
-   Normalizes numerical attributes
-   Creates sparse matrices for collaborative filtering
+- Vectorizes text features while handling multiple languages
+- Normalizes numerical attributes
+- Creates sparse matrices for collaborative filtering
 3. **Recommendation Generation**:
-   Matches user queries across multiple languages
-   Generates separate recommendations from each module
-   Combines and ranks final recommendations
+- Matches user queries across multiple languages
+- Generates separate recommendations from each module
+- Combines and ranks final recommendations
 ---
 
 ## Sentiment Analysis Module
